@@ -97,7 +97,7 @@ const weekContent=weekUnlocked(activeWeek)?`<div class="card"><h2>Semaine ${acti
 const content=seasonTab==='semaines'?weeks+weekContent:seasonTab==='calendriers'?extraImages('Calendriers'):seasonTab==='playoffs'?extraImages('Playoffs'):extraImages('Statistiques finales')+extraImages('MVP et statistiques');
 return `<div class="row space"><div><div class="eyebrow">RAZE CHAMPIONSHIP · ARCHIVES</div><h1>🏆 Saison 1</h1><p>Documents réels fournis par l'organisateur · consultation et vérification</p></div><span class="tag">Import documentaire · données à confirmer</span></div><div class="notice">Les résultats et calendriers sont accessibles progressivement. Les modifications administrateur restent locales à ce navigateur.</div>${tabs}${content}`;
 }
-function extraImages(label){let g=seasonExtras.find(x=>x.label===label);return `<div class="card" style="margin-bottom:16px"><h2>${esc(label)}</h2><div class="season-grid">${g.files.filter(f=>label!=='Calendriers'||!(/^(?:semaine 6|Semaine 7PNG)\.PNG$/i.test(f.name))||weekUnlocked(Number(f.name.match(/[67]/)?.[0]))).map(f=>seasonImage(f)).join('')}</div></div>`}function seasonImage(f){return `<a class="season-item" href="${f.url}" target="_blank" rel="noopener"><img src="${f.url}" loading="lazy" alt="${esc(f.name)}"><span>${esc(f.name)} ↗</span></a>`}function setRanking(mode){$('ranking').innerHTML=`<h2>Classement ${mode}</h2><table><tr><th>Position</th><th>Équipe</th><th>Points</th></tr>${teams.map((t,i)=>`<tr><td>#${i+1}</td><td>${esc(t)}</td><td>${(4-i)*250}</td></tr>`).join('')}</table>`}function showInfo(feature){alert(feature+' : fonctionnalité indisponible pour le moment.')}function createTournament(e){e.preventDefault();tournaments.unshift({name:$('tName').value,mode:$('tMode').value,format:$('tFormat').value,status:'Brouillon',players:Number($('tPlaces').value)});render();alert('Tournoi ajouté. Consultez la page Tournois.')}function deleteTournament(i){if(confirm('Supprimer ce tournoi ?')){tournaments.splice(i,1);render()}}
+function extraImages(label){let g=seasonExtras.find(x=>x.label===label);return `<div class="card" style="margin-bottom:16px"><h2>${esc(label)}</h2><div class="season-grid">${g.files.filter(f=>label!=='Calendriers'||!(/^(?:semaine 6|Semaine 7PNG)\.PNG$/i.test(f.name))||weekUnlocked(Number(f.name.match(/[67]/)?.[0]))).map(f=>seasonImage(f)).join('')}</div></div>`}function seasonImage(f){return `<a class="season-item" href="${f.url}" target="_blank" rel="noopener"><img src="${f.url}" loading="lazy" alt="${esc(f.name)}"><span>${esc(f.name)} ↗</span></a>`}function setRanking(mode){$('ranking').innerHTML=`<h2>Classement ${mode}</h2><table><tr><th>Position</th><th>Équipe</th><th>Points</th></tr>${teams.map((t,i)=>`<tr><td>#${i+1}</td><td>${esc(t)}</td><td>${(4-i)*250}</td></tr>`).join('')}</table>`}function showInfo(feature){alert(feature+' : fonctionnalité indisponible pour le moment.')}function createTournament(e){e.preventDefault();if(!replayVerifiedAdmin)return;tournaments.unshift({name:$('tName').value,mode:$('tMode').value,format:$('tFormat').value,status:'Brouillon',players:Number($('tPlaces').value)});championshipScheduleSync();render();alert('Tournoi ajouté. Consultez la page Tournois.')}function deleteTournament(i){if(!replayVerifiedAdmin)return;if(confirm('Supprimer ce tournoi ?')){tournaments.splice(i,1);championshipScheduleSync();render()}}
 
 const realMatches=[{"week":1,"a":"Black Horizon","b":"Dynasty","sa":3,"sb":1,"source":"assets/s1_0.webp"},{"week":1,"a":"Dunk Master","b":"Cordon Bleu Penders","sa":0,"sb":4,"source":"assets/s1_4.webp"},{"week":1,"a":"Eclipse","b":"Origin","sa":1,"sb":3,"source":"assets/s1_5.webp"},{"week":1,"a":"Pause Café","b":"Trinity","sa":3,"sb":1,"source":"assets/s1_9.webp"},{"week":2,"a":"Cordon Bleu Penders","b":"Pause Café","sa":4,"sb":0,"source":"assets/s2_13.webp"},{"week":2,"a":"Eclipse","b":"Dynasty","sa":3,"sb":1,"source":"assets/s2_14.webp"},{"week":2,"a":"Origin","b":"Dunk Master","sa":4,"sb":0,"source":"assets/s2_17.webp"},{"week":2,"a":"Trinity","b":"Black Horizon","sa":4,"sb":0,"source":"assets/s2_20.webp"},{"week":3,"a":"Cordon Bleu Penders","b":"Black Horizon","sa":4,"sb":0,"source":"assets/s3_22.webp"},{"week":3,"a":"Origin","b":"Dynasty","sa":4,"sb":0,"source":"assets/s3_26.webp"},{"week":3,"a":"Pause Café","b":"Dunk Master","sa":2,"sb":2,"source":"assets/s3_28.webp"},{"week":3,"a":"Trinity","b":"Eclipse","sa":0,"sb":4,"source":"assets/s3_29.webp"},{"week":4,"a":"Cordon Bleu Penders","b":"Eclipse","sa":4,"sb":0,"source":"assets/s4_32.webp"},{"week":4,"a":"Dunk Master","b":"Black Horizon","sa":3,"sb":1,"source":"assets/s4_35.webp"},{"week":4,"a":"Pause Café","b":"Origin","sa":1,"sb":3,"source":"assets/s4_38.webp"},{"week":4,"a":"Trinity","b":"Dynasty","sa":2,"sb":2,"source":"assets/s4_40.webp"},{"week":5,"a":"Black Horizon","b":"Pause Café","sa":1,"sb":3,"source":"assets/s5_41.webp"},{"week":5,"a":"Cordon Bleu Penders","b":"Dynasty","sa":3,"sb":1,"source":"assets/s5_45.webp"},{"week":5,"a":"Eclipse","b":"Dunk Master","sa":0,"sb":4,"source":"assets/s5_46.webp"},{"week":5,"a":"Origin","b":"Trinity","sa":3,"sb":1,"source":"assets/s5_51.webp"}];
 const scheduledMatches=[{"week":6,"a":"Black Horizon","b":"Origin","sa":2,"sb":2,"source":"","format":"BO4","status":"Terminé"},{"week":6,"a":"Cordon Bleu Penders","b":"Trinity","sa":3,"sb":1,"source":"","format":"BO4","status":"Terminé"},{"week":6,"a":"Eclipse","b":"Pause Café","sa":2,"sb":2,"source":"","format":"BO4","status":"Terminé"},{"week":6,"a":"Dunk Master","b":"Dynasty","sa":1,"sb":3,"source":"","format":"BO4","status":"Terminé"},{"week":7,"a":"Origin","b":"Cordon Bleu Penders","sa":3,"sb":1,"source":"","format":"BO4","status":"Terminé"},{"week":7,"a":"Eclipse","b":"Black Horizon","sa":0,"sb":4,"source":"","format":"BO4","status":"Terminé"},{"week":7,"a":"Dunk Master","b":"Trinity","sa":2,"sb":2,"source":"","format":"BO4","status":"Terminé"},{"week":7,"a":"Dynasty","b":"Pause Café","sa":3,"sb":1,"source":"","format":"BO4","status":"Terminé"}];
@@ -117,7 +117,7 @@ function selectMatchWeek(w){v4Week=w;render()}
 function selectArchiveWeek(w){activeWeek=w;render()}
 function lockedWeekMessage(w){return `<div class="card" style="border:1px solid #a77c35"><h2>🔒 Semaine ${w} verrouillée</h2><p>Les affiches seront dévoilées lorsque tous les matchs de la semaine ${w-1} auront un résultat enregistré.</p><p>Les onglets de toutes les semaines restent visibles.</p></div>`}
 
-function saveV4(){localStorage.setItem('raze_s1_added_matches',JSON.stringify(customMatches))}
+function saveV4(){localStorage.setItem('raze_s1_added_matches',JSON.stringify(customMatches));championshipScheduleSync()}
 function v4Standings(){let r=Object.fromEntries(teamNames.map(n=>[n,{name:n,j:0,v:0,n:0,d:0,pf:0,pc:0,pts:0}]));allRealMatches().forEach(m=>{if(m.sa===null||m.sb===null)return;for(const [t,sc,against] of [[m.a,m.sa,m.sb],[m.b,m.sb,m.sa]]){if(!r[t])r[t]={name:t,j:0,v:0,n:0,d:0,pf:0,pc:0,pts:0};let x=r[t];x.j++;x.pf+=sc;x.pc+=against;if(sc>against){x.v++;x.pts+=3}else if(sc===against){x.n++;x.pts++}else x.d++}});return Object.values(r).sort((a,b)=>b.pts-a.pts||(b.pf-b.pc)-(a.pf-a.pc)||b.pf-a.pf)}
 function v4Results(){const shown=v4Week!=='Toutes'&&!weekUnlocked(Number(v4Week))?[]:allRealMatches().filter(m=>(v4Week==='Toutes'||String(m.week)===String(v4Week))&&weekUnlocked(m.week));return `<div class="v4-filter">${['Toutes',1,2,3,4,5,6,7].map(w=>`<button class="${String(w)===String(v4Week)?'selected':''}" onclick="selectMatchWeek('${w}')" title="${w!=='Toutes'&&!weekUnlocked(Number(w))?'Termine la semaine précédente pour voir les affiches':''}">${w==='Toutes'?'Toutes les semaines':(weekUnlocked(Number(w))?'':'🔒 ')+'Semaine '+w}</button>`).join('')}</div>${v4Week!=='Toutes'&&!weekUnlocked(Number(v4Week))?lockedWeekMessage(v4Week):`<div class="v4-grid v4-match-list">${shown.map(m=>`<article class="v4-result"><small>Semaine ${m.week} · ${m.sa===null?'À jouer · BO4':'Résultat enregistré'}</small><h3>${esc(displayTeam(m.a))} <span class="v4-vs">VS</span> ${esc(displayTeam(m.b))}</h3><div class="v4-score">${m.sa===null?'À jouer · BO4':m.sa+' — '+m.sb}</div><div class="v4-source">${m.source?`<a href="${m.source}" target="_blank" rel="noopener">Voir la feuille de résultat ↗</a>`:''} <button type="button" class="replay-trigger" onclick="toggleReplayPanel('${replayMatchKey(m)}')">📤 Importer un replay</button></div>${replayOpenMatch===replayMatchKey(m)?renderReplayPanel(m):''}</article>`).join('')||'<div class="card">Aucune rencontre enregistrée pour cette semaine.</div>'}</div>`}`}
 // V36 : envoi réel des replays avec authentification Supabase.
@@ -240,8 +240,8 @@ async function replayInit(){
  if(!window.supabase?.createClient){console.warn('Bibliothèque Supabase indisponible');return;}
  replayClient=window.supabase.createClient(championshipSupabaseUrl,championshipSupabaseKey);
  const {data}=await replayClient.auth.getSession();replaySession=data?.session||null;
- replayClient.auth.onAuthStateChange((_event,session)=>{replaySession=session;if(session){setTimeout(()=>{replayLoadPermissions();if(replayOpenMatch)replayRefresh(replayOpenMatch)},0)}else{admin=false;replayVerifiedAdmin=false;replayVerifiedTeams=[];replayAccessLoaded=false;if(page==='Administration'||page==='Saison 1')page='Accueil';render()}});
- if(replaySession)await replayLoadPermissions();else render();
+ replayClient.auth.onAuthStateChange((_event,session)=>{replaySession=session;if(session){setTimeout(()=>{replayLoadPermissions();championshipLoadShared();if(replayOpenMatch)replayRefresh(replayOpenMatch)},0)}else{admin=false;replayVerifiedAdmin=false;replayVerifiedTeams=[];replayAccessLoaded=false;if(page==='Administration'||page==='Saison 1')page='Accueil';render()}});
+ if(replaySession)await replayLoadPermissions();else render();await championshipLoadShared();championshipStartPolling();
 }
 replayInit();
 
@@ -262,8 +262,8 @@ try {
  }));
 }catch(e){seasonRosters=structuredClone(initialSeasonRosters)}
 for(const t of createdTeams){if(!Array.isArray(seasonRosters[t])){try{const saved=JSON.parse(localStorage.getItem(rosterStorageKey)||'{}');seasonRosters[t]=Array.isArray(saved[t])?saved[t].filter(x=>typeof x==='string'):[];}catch(e){seasonRosters[t]=[];}}}
-function saveRosters(){localStorage.setItem(rosterStorageKey,JSON.stringify(seasonRosters))}
-function addTeamMember(event){event.preventDefault();if(!admin)return;const f=event.currentTarget;const team=f.elements.team.value;const name=f.elements.member.value.trim();if(!teamNames.includes(team)||!name){alert('Choisis une équipe et saisis un pseudo.');return}if(name.length>60){alert('Pseudo trop long (60 caractères maximum).');return}if((seasonRosters[team]||[]).some(n=>n.toLocaleLowerCase()===name.toLocaleLowerCase())){alert('Ce joueur figure déjà dans cette équipe.');return}seasonRosters[team].push(name);saveRosters();render();alert('Joueur ajouté à '+team+' sur cet appareil.')}
+function saveRosters(){localStorage.setItem(rosterStorageKey,JSON.stringify(seasonRosters));championshipScheduleSync()}
+function addTeamMember(event){event.preventDefault();if(!admin)return;const f=event.currentTarget;const team=f.elements.team.value;const name=f.elements.member.value.trim();if(!teamNames.includes(team)||!name){alert('Choisis une équipe et saisis un pseudo.');return}if(name.length>60){alert('Pseudo trop long (60 caractères maximum).');return}if((seasonRosters[team]||[]).some(n=>n.toLocaleLowerCase()===name.toLocaleLowerCase())){alert('Ce joueur figure déjà dans cette équipe.');return}seasonRosters[team].push(name);saveRosters();render();alert('Joueur ajouté à '+team+'.')}
 function removeTeamMember(teamIndex,memberIndex){if(!admin)return;const team=teamNames[teamIndex];if(!team||!seasonRosters[team]?.[memberIndex])return;if(!confirm('Retirer '+seasonRosters[team][memberIndex]+' de '+team+' ?'))return;seasonRosters[team].splice(memberIndex,1);saveRosters();render()}
 const teamNameStorageKey='raze_s1_team_names_v9';
 let teamDisplayNames={};
@@ -276,8 +276,8 @@ function renameTeam(event){
  if(!newName||newName.length>60){alert('Le nom doit contenir entre 1 et 60 caractères.');return;}
  if(teamNames.some(t=>t!==team&&displayTeam(t).toLocaleLowerCase()===newName.toLocaleLowerCase())){alert('Une autre équipe porte déjà ce nom.');return;}
  const old=displayTeam(team);teamDisplayNames[team]=newName;
- localStorage.setItem(teamNameStorageKey,JSON.stringify(teamDisplayNames));render();
- alert('Nom modifié : '+old+' → '+newName+' (uniquement dans ce navigateur).');
+ localStorage.setItem(teamNameStorageKey,JSON.stringify(teamDisplayNames));championshipScheduleSync();render();
+ alert('Nom modifié : '+old+' → '+newName+'.');
 }
 function createCompleteTeam(event){
  event.preventDefault();if(!admin)return;
@@ -289,8 +289,8 @@ function createCompleteTeam(event){
  if(members.some(n=>n.length>60)){alert('Un pseudo dépasse 60 caractères.');return;}
  if(new Set(members.map(n=>n.toLocaleLowerCase())).size!==members.length){alert('Un joueur est présent plusieurs fois.');return;}
  teamNames.push(name);createdTeams.push(name);seasonRosters[name]=members;
- try{localStorage.setItem(createdTeamsKey,JSON.stringify(createdTeams));saveRosters();}catch(e){alert('Impossible de sauvegarder localement : '+e.message);return;}
- render();alert('Équipe '+name+' créée avec '+members.length+' membre(s) sur cet appareil.');
+ try{localStorage.setItem(createdTeamsKey,JSON.stringify(createdTeams));saveRosters();championshipScheduleSync();}catch(e){alert('Impossible de sauvegarder localement : '+e.message);return;}
+ render();alert('Équipe '+name+' créée avec '+members.length+' membre(s).');
 }
 function toggleRoster(key){const el=document.getElementById('roster-'+key);if(el)el.hidden=!el.hidden;}
 let rankingMetric='manches';
@@ -383,7 +383,7 @@ const poIds=['uq1','uq2','uq3','uq4','us1','us2','uf','lr1','lr2','lr3','lr4','l
 const poLabels={uq1:'Quart de finale 1',uq2:'Quart de finale 2',uq3:'Quart de finale 3',uq4:'Quart de finale 4',us1:'Demi-finale 1',us2:'Demi-finale 2',uf:'Finale Upper',lr1:'Lower — Round 1 · 1',lr2:'Lower — Round 1 · 2',lr3:'Lower — Round 2 · 1',lr4:'Lower — Round 2 · 2',ls:'Demi-finale Lower',lf:'Finale Lower',gf:'Grande finale'};
 let poScores=(()=>{try{return JSON.parse(localStorage.getItem('raze_playoffs_v26')||'{}')||{}}catch{return {}}})();
 let poEditId=null;
-function poSave(){localStorage.setItem('raze_playoffs_v26',JSON.stringify(poScores))}
+function poSave(){localStorage.setItem('raze_playoffs_v26',JSON.stringify(poScores));championshipScheduleSync()}
 function poCompute(){
  const m={};const assign=(id,a,b)=>{const s=poScores[id],valid=!!(a&&b&&s&&Number.isInteger(s[0])&&Number.isInteger(s[1])&&s[0]>=0&&s[1]>=0&&s[0]!==s[1]&&s.a===a&&s.b===b);m[id]={a:a||null,b:b||null,sa:valid?s[0]:null,sb:valid?s[1]:null};m[id].winner=valid?(s[0]>s[1]?a:b):null;m[id].loser=valid?(s[0]>s[1]?b:a):null;return m[id]};
  const w=id=>m[id].winner,l=id=>m[id].loser;
@@ -438,7 +438,7 @@ function poDrawRoutes(){
  svg.innerHTML=segments.join('');
 }
 function renderPlayoffReplayPanel(m){if(!replayOpenMatch?.startsWith('playoffs|'))return '';const id=poIds.find(id=>playoffReplayKey(id)===replayOpenMatch);if(!id)return '';const match=playoffReplayMatch(id);if(!replayCanOpenPlayoff(match))return '';return `<div class="card" id="playoff-replay-panel" style="margin:20px 0"><h2>📤 ${esc(poLabels[id])}</h2>${renderReplayPanel(match)}</div>`}
-function renderPlayoffs(){const m=poCompute();requestAnimationFrame(poDrawRoutes);return `<h1>🏅 Playoffs — Saison 1</h1>${admin?`<div class="v4-note">Tableau interactif basé sur le bracket original de la saison 1. Les équipes avancent automatiquement dès qu'un résultat est enregistré.${admin?' Mode administration : saisis les scores avec les boutons des rencontres.':' Résultats modifiables en mode administration uniquement.'} Les modifications sont enregistrées uniquement dans ce navigateur.</div>`:''}${poEditor(m)}<div class="po-stage-scroll"><div class="po-stage"><svg class="po-paths" aria-hidden="true"></svg><h2>🟡 Upper Bracket</h2><div class="po-grid po-upper-grid">${poColumn('Quarts de finale',['uq1','uq2','uq3','uq4'],m)}${poColumn('Demi-finales',['us1','us2'],m)}${poColumn('Finale Upper',['uf'],m)}${poColumn('Grande finale',['gf'],m)}</div><h2 class="po-lower">🔴 Lower Bracket</h2><div class="po-grid po-lower-grid">${poColumn('Round 1',['lr1','lr2'],m,true)}${poColumn('Round 2',['lr3','lr4'],m,true)}${poColumn('Demi-finale',['ls'],m,true)}${poColumn('Finale Lower',['lf'],m,true)}</div></div></div>${renderPlayoffReplayPanel(m)}${admin?`<details class="card"><summary style="cursor:pointer;color:var(--gold);font-weight:800">Afficher l'image originale des playoffs</summary><p>Document d'origine fourni dans l'archive saison 1.</p><img class="po-original" src="assets/extra_73.webp" alt="Tableau original des playoffs saison 1"></details><p class="po-help">Le classement du championnat et les résultats des semaines 1 à 7 ne sont pas modifiés par les playoffs.</p>`:''}`}
+function renderPlayoffs(){const m=poCompute();requestAnimationFrame(poDrawRoutes);return `<h1>🏅 Playoffs — Saison 1</h1>${admin?`<div class="v4-note">Tableau interactif basé sur le bracket original de la saison 1. Les équipes avancent automatiquement dès qu'un résultat est enregistré.${admin?' Mode administration : saisis les scores avec les boutons des rencontres.':' Résultats modifiables en mode administration uniquement.'} Les résultats validés sont synchronisés avec Supabase.</div>`:''}${poEditor(m)}<div class="po-stage-scroll"><div class="po-stage"><svg class="po-paths" aria-hidden="true"></svg><h2>🟡 Upper Bracket</h2><div class="po-grid po-upper-grid">${poColumn('Quarts de finale',['uq1','uq2','uq3','uq4'],m)}${poColumn('Demi-finales',['us1','us2'],m)}${poColumn('Finale Upper',['uf'],m)}${poColumn('Grande finale',['gf'],m)}</div><h2 class="po-lower">🔴 Lower Bracket</h2><div class="po-grid po-lower-grid">${poColumn('Round 1',['lr1','lr2'],m,true)}${poColumn('Round 2',['lr3','lr4'],m,true)}${poColumn('Demi-finale',['ls'],m,true)}${poColumn('Finale Lower',['lf'],m,true)}</div></div></div>${renderPlayoffReplayPanel(m)}${admin?`<details class="card"><summary style="cursor:pointer;color:var(--gold);font-weight:800">Afficher l'image originale des playoffs</summary><p>Document d'origine fourni dans l'archive saison 1.</p><img class="po-original" src="assets/extra_73.webp" alt="Tableau original des playoffs saison 1"></details><p class="po-help">Le classement du championnat et les résultats des semaines 1 à 7 ne sont pas modifiés par les playoffs.</p>`:''}`}
 window.addEventListener('resize',()=>{if(document.querySelector('.po-stage'))requestAnimationFrame(poDrawRoutes)});
 
 
@@ -449,9 +449,94 @@ if(which==='Équipes')return `<h1>👥 Équipes de la saison 1</h1><p class="v4-
 if(which==='Matchs')return `<h1>📅 Matchs — Saison 1</h1>${notice}${v4Results()}`;
 if(which==='Classements')return `<h1>📊 Classements — Saison 1</h1>${notice}<h2>Classement des équipes</h2><div class="v4-filter"><button class="${rankingMetric==='manches'?'selected':''}" onclick="rankingToggle('manches')">🎮 Manches</button><button class="${rankingMetric==='buts'?'selected':''}" onclick="rankingToggle('buts')">⚽ Buts</button></div>${rankingMetric==='buts'?'<p class="v4-note">⚽ Totaux cumulés des semaines 1 à 7 : 28 rencontres × 4 manches. Les semaines 6 et 7 proviennent des nouvelles captures de résultats. Les résultats ajoutés sans détail des manches ne sont pas inclus dans ces totaux de buts.</p>':''}<div class="card v4-scroll"><table class="v4-table"><tr><th>#</th><th>Équipe</th><th>J</th><th>V</th><th>N</th><th>D</th><th>${rankingMetric==='manches'?'Manches +':'Buts marqués'}</th><th>${rankingMetric==='manches'?'Manches −':'Buts encaissés'}</th><th>Diff.</th><th>Pts*</th></tr>${standing.map((t,i)=>{const g=goalsSeason[t.name];const a=rankingMetric==='manches'?t.pf:g?.for;const b=rankingMetric==='manches'?t.pc:g?.against;return `<tr><td>${i+1}</td><td>${esc(displayTeam(t.name))}</td><td>${t.j}</td><td>${t.v}</td><td>${t.n}</td><td>${t.d}</td><td>${a??'—'}</td><td>${b??'—'}</td><td>${a!=null&&b!=null?(a-b>0?'+':'')+(a-b):'—'}</td><td><b>${t.pts}</b></td></tr>`}).join('')}</table></div>${rankingMetric==='buts'?`<details class="card"><summary>📋 Vérifier les 28 rencontres utilisées pour le calcul</summary><div class="v4-scroll"><table class="v4-table"><tr><th>Sem.</th><th>Rencontre</th><th>Scores des 4 manches (A–B)</th><th>Buts A</th><th>Buts B</th></tr>${goalsByMatch.map(m=>`<tr><td>${m.week}</td><td>${esc(displayTeam(m.a))} / ${esc(displayTeam(m.b))}</td><td>${m.games.map(g=>g.join('–')).join(' · ')}</td><td>${m.games.reduce((n,g)=>n+g[0],0)}</td><td>${m.games.reduce((n,g)=>n+g[1],0)}</td></tr>`).join('')}</table></div></details>`:''}<h2>Statistiques individuelles réelles</h2>${v4Stats()}`;
 if(which==='Brackets')return renderPlayoffs();
-if(which==='Administration')return `<h1>👑 Administration · Saison 1</h1>${renderTeamAccessAdmin()}<div class="v4-note">Les modifications sont enregistrées uniquement sur cet appareil et ne sont pas partagées entre visiteurs. Le mode administrateur n’est pas encore sécurisé.</div><div class="card"><h2>➕ Créer une équipe complète</h2><p>Crée une équipe avec son nom et ses joueurs. Un pseudo par ligne (ou séparé par une virgule). Elle apparaîtra immédiatement dans l’onglet Équipes et dans les listes administrateur. Aucune rencontre n’est créée automatiquement.</p><form onsubmit="createCompleteTeam(event)"><label>Nom de l’équipe<input class="v4-admininput" name="teamName" type="text" maxlength="60" required placeholder="Nom de la nouvelle équipe"></label><label>Joueurs<textarea name="members" rows="5" required placeholder="Joueur 1&#10;Joueur 2&#10;Joueur 3" style="width:100%;background:#11151b;color:white;border:1px solid #555;border-radius:8px;padding:12px"></textarea></label><button class="primary" type="submit">+ Créer l’équipe avec ses joueurs</button></form></div><div class="card"><h2>✏️ Renommer une équipe</h2><p>Modifie le nom affiché dans les équipes, les matchs, les classements et l’administration. Les résultats et les membres restent rattachés à la même équipe. Les modifications sont enregistrées sur cet appareil.</p><form onsubmit="renameTeam(event)"><label>Équipe<select name="originalTeam" required>${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Nouveau nom<input class="v4-admininput" name="newTeamName" type="text" maxlength="60" required placeholder="Nouveau nom de l’équipe"></label><button class="primary" type="submit">Enregistrer le nouveau nom</button></form></div><div class="card"><h2>👥 Gérer les membres des équipes</h2><p>Ajouter un joueur à une équipe de la saison 1. Les changements sont enregistrés uniquement dans ce navigateur.</p><form onsubmit="addTeamMember(event)"><label>Équipe<select name="team" required>${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Pseudo du joueur<input class="v4-admininput" name="member" type="text" maxlength="60" required placeholder="Pseudo du joueur"></label><button class="primary" type="submit">+ Ajouter le membre</button></form><h3>Membres actuellement affichés</h3>${teamNames.map((t,ti)=>`<details style="margin:8px 0"><summary>${esc(displayTeam(t))} (${seasonRosters[t].length})</summary>${seasonRosters[t].map((n,ni)=>`<div class="roster-member">${esc(n)} <button type="button" onclick="removeTeamMember(${ti},${ni})">Retirer</button></div>`).join('')||'<p>Aucun membre.</p>'}</details>`).join('')}</div><div class="card"><h2>Ajouter un résultat / programmer un match</h2><p>Les semaines 1 à 7 sont enregistrées. Les résultats ajoutés ici restent locaux à ton navigateur et ne modifient pas les données de référence de la saison.</p><form onsubmit="v4Add(event)"><label>Semaine<select name="week">${[6,7,8,9,10].map(w=>`<option value="${w}">${w}</option>`).join('')}</select></label><label>Équipe A<select name="a">${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Équipe B<select name="b">${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Score A (vide = à jouer)<input name="sa" type="number" min="0" class="v4-admininput" placeholder="Non joué"></label><label>Score B (vide = à jouer)<input name="sb" type="number" min="0" class="v4-admininput" placeholder="Non joué"></label><button class="primary" type="submit">Ajouter le résultat</button></form></div><div class="card"><h2>Rencontres ajoutées localement</h2>${customMatches.map((m,i)=>`<p>S${m.week} · ${esc(displayTeam(m.a))} ${m.sa??'—'} - ${m.sb??'—'} ${esc(displayTeam(m.b))} <button onclick="customMatches.splice(${i},1);saveV4();render()">Supprimer</button></p>`).join('')||'<p>Aucune rencontre ajoutée.</p>'}</div>`;
+if(which==='Administration')return `<h1>👑 Administration · Saison 1</h1>${championshipSyncAdminPanel()}${renderTeamAccessAdmin()}<div class="v4-note">Les résultats et équipes publiés dans Supabase sont partagés entre les visiteurs. Les disponibilités restent locales pour le moment. Les opérations d’administration sont réservées aux comptes autorisés.</div><div class="card"><h2>➕ Créer une équipe complète</h2><p>Crée une équipe avec son nom et ses joueurs. Un pseudo par ligne (ou séparé par une virgule). Elle apparaîtra immédiatement dans l’onglet Équipes et dans les listes administrateur. Aucune rencontre n’est créée automatiquement.</p><form onsubmit="createCompleteTeam(event)"><label>Nom de l’équipe<input class="v4-admininput" name="teamName" type="text" maxlength="60" required placeholder="Nom de la nouvelle équipe"></label><label>Joueurs<textarea name="members" rows="5" required placeholder="Joueur 1&#10;Joueur 2&#10;Joueur 3" style="width:100%;background:#11151b;color:white;border:1px solid #555;border-radius:8px;padding:12px"></textarea></label><button class="primary" type="submit">+ Créer l’équipe avec ses joueurs</button></form></div><div class="card"><h2>✏️ Renommer une équipe</h2><p>Modifie le nom affiché dans les équipes, les matchs, les classements et l’administration. Les résultats et les membres restent rattachés à la même équipe. Les modifications sont synchronisées avec Supabase.</p><form onsubmit="renameTeam(event)"><label>Équipe<select name="originalTeam" required>${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Nouveau nom<input class="v4-admininput" name="newTeamName" type="text" maxlength="60" required placeholder="Nouveau nom de l’équipe"></label><button class="primary" type="submit">Enregistrer le nouveau nom</button></form></div><div class="card"><h2>👥 Gérer les membres des équipes</h2><p>Ajouter un joueur à une équipe de la saison 1. Les modifications sont synchronisées avec Supabase.</p><form onsubmit="addTeamMember(event)"><label>Équipe<select name="team" required>${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Pseudo du joueur<input class="v4-admininput" name="member" type="text" maxlength="60" required placeholder="Pseudo du joueur"></label><button class="primary" type="submit">+ Ajouter le membre</button></form><h3>Membres actuellement affichés</h3>${teamNames.map((t,ti)=>`<details style="margin:8px 0"><summary>${esc(displayTeam(t))} (${seasonRosters[t].length})</summary>${seasonRosters[t].map((n,ni)=>`<div class="roster-member">${esc(n)} <button type="button" onclick="removeTeamMember(${ti},${ni})">Retirer</button></div>`).join('')||'<p>Aucun membre.</p>'}</details>`).join('')}</div><div class="card"><h2>Ajouter un résultat / programmer un match</h2><p>Les semaines 1 à 7 sont enregistrées. Les résultats ajoutés ici sont partagés via Supabase et ne modifient pas les données de référence de la saison.</p><form onsubmit="v4Add(event)"><label>Semaine<select name="week">${[6,7,8,9,10].map(w=>`<option value="${w}">${w}</option>`).join('')}</select></label><label>Équipe A<select name="a">${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Équipe B<select name="b">${teamNames.map(t=>`<option value="${esc(t)}">${esc(displayTeam(t))}</option>`).join('')}</select></label><label>Score A (vide = à jouer)<input name="sa" type="number" min="0" class="v4-admininput" placeholder="Non joué"></label><label>Score B (vide = à jouer)<input name="sb" type="number" min="0" class="v4-admininput" placeholder="Non joué"></label><button class="primary" type="submit">Ajouter le résultat</button></form></div><div class="card"><h2>Rencontres ajoutées</h2>${customMatches.map((m,i)=>`<p>S${m.week} · ${esc(displayTeam(m.a))} ${m.sa??'—'} - ${m.sb??'—'} ${esc(displayTeam(m.b))} <button onclick="customMatches.splice(${i},1);saveV4();render()">Supprimer</button></p>`).join('')||'<p>Aucune rencontre ajoutée.</p>'}</div>`;
 return ''}
 function v4Add(e){e.preventDefault();const f=new FormData(e.target),a=f.get('a'),b=f.get('b'),sa=f.get('sa'),sb=f.get('sb');if(a===b){alert('Choisis deux équipes différentes.');return}if((sa==='')!==(sb==='')){alert('Renseigne les deux scores ou laisse les deux vides.');return}customMatches.push({week:Number(f.get('week')),a,b,sa:sa===''?null:Number(sa),sb:sb===''?null:Number(sb),source:''});saveV4();render()}
+
+
+// V45 : état partagé, chargé depuis Supabase et publié exclusivement par les administrateurs.
+// La saison 1 de référence et les statistiques historiques ne sont jamais réécrites.
+let championshipSharedRevision=null,championshipSharedLoaded=false;
+let championshipSharedTimer=null,championshipSharedSaving=false,championshipSharedDirty=false;
+let championshipSharedStatus='Connexion à la synchronisation…';
+let championshipPoll=null;
+function championshipSnapshot(){
+ return {tournaments,createdTeams,customMatches,seasonRosters,teamDisplayNames,poScores};
+}
+function championshipApply(state){
+ if(!state||typeof state!=='object')return;
+ if(Array.isArray(state.tournaments))tournaments=state.tournaments;
+ if(Array.isArray(state.createdTeams)){
+  for(const t of [...createdTeams]){if(!state.createdTeams.includes(t)){const i=teamNames.indexOf(t);if(i>=0)teamNames.splice(i,1)}}
+  createdTeams=state.createdTeams.filter(t=>typeof t==='string'&&t.trim());
+  for(const t of createdTeams)if(!teamNames.includes(t))teamNames.push(t);
+ }
+ if(Array.isArray(state.customMatches))customMatches=state.customMatches;
+ if(state.seasonRosters&&typeof state.seasonRosters==='object'){
+  for(const t of teamNames)if(Array.isArray(state.seasonRosters[t]))seasonRosters[t]=state.seasonRosters[t];
+ }
+ if(state.teamDisplayNames&&typeof state.teamDisplayNames==='object')teamDisplayNames=state.teamDisplayNames;
+ if(state.poScores&&typeof state.poScores==='object')poScores=state.poScores;
+ render();
+}
+async function championshipLoadShared(){
+ if(!replayClient||championshipSharedSaving||championshipSharedDirty)return;
+ const {data,error}=await replayClient.from('championship_shared_state').select('revision,payload').eq('id',1).maybeSingle();
+ if(error){championshipSharedStatus='Synchronisation indisponible : '+error.message;console.warn(championshipSharedStatus);return;}
+ championshipSharedLoaded=true;
+ if(data){
+  if(championshipSharedRevision!==data.revision){
+   championshipSharedRevision=data.revision;
+   championshipApply(data.payload);
+  }
+  championshipSharedStatus='☁️ Données partagées synchronisées';
+ }else{
+  championshipSharedRevision=0;
+  championshipSharedStatus='☁️ Base partagée vide : initialisation administrateur nécessaire';
+ }
+ if(page==='Administration')render();
+}
+function championshipScheduleSync(){
+ if(!replayVerifiedAdmin||!replayClient){console.warn('Écriture partagée réservée aux administrateurs');return;}
+ championshipSharedDirty=true;
+ clearTimeout(championshipSharedTimer);
+ championshipSharedTimer=setTimeout(championshipSaveShared,350);
+}
+async function championshipSaveShared(){
+ if(championshipSharedSaving||!championshipSharedDirty)return;
+ if(!championshipSharedLoaded){alert('Synchronisation non chargée. Aucune modification publiée.');championshipSharedDirty=false;await championshipLoadShared();return;}
+ championshipSharedSaving=true;championshipSharedDirty=false;
+ const payload=championshipSnapshot(),expected=championshipSharedRevision;
+ const {data,error}=await replayClient.rpc('championship_update_shared_state',{p_expected_revision:expected,p_payload:payload});
+ championshipSharedSaving=false;
+ if(error){
+  championshipSharedStatus='⚠️ Enregistrement refusé : '+error.message;
+  alert(championshipSharedStatus+'. Recharge la page pour récupérer les données publiées.');
+  championshipSharedDirty=false;
+  await championshipLoadShared();
+ }else{
+  championshipSharedRevision=data;
+  championshipSharedStatus='☁️ Modifications publiées pour tous les visiteurs';
+  if(championshipSharedDirty)championshipSaveShared();
+ }
+ if(page==='Administration')render();
+}
+async function championshipInitializeShared(){
+ if(!replayVerifiedAdmin||!championshipSharedLoaded||championshipSharedRevision!==0)return;
+ if(!confirm('Publier les données actuellement affichées sur ce navigateur comme état initial partagé ? Vérifie d’abord les résultats et équipes.'))return;
+ championshipScheduleSync();
+}
+function championshipStartPolling(){
+ if(championshipPoll)return;
+ championshipPoll=setInterval(()=>{if(!document.hidden&&!championshipSharedDirty)championshipLoadShared()},20000);
+}
+function championshipSyncAdminPanel(){
+ if(!replayVerifiedAdmin)return '';
+ return `<div class="card"><h2>☁️ Synchronisation du championnat</h2><p>${esc(championshipSharedStatus)}</p>
+ ${championshipSharedRevision===0?'<button class="primary" onclick="championshipInitializeShared()">Publier les données initiales</button>':''}
+ <button type="button" onclick="championshipLoadShared()">↻ Actualiser les données partagées</button>
+ <p class="v4-source">Les résultats historiques et les statistiques individuelles de référence ne sont pas recalculés. Les disponibilités des équipes ne sont pas encore synchronisées.</p></div>`;
+}
 
 // Premier affichage après la déclaration des données.
 render();
