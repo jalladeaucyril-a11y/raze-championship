@@ -33,6 +33,11 @@
 .po-stage .po-upper-grid .po-col:nth-child(4) .po-match{margin-top:280px}
 .po-stage .po-lower{margin-top:0;margin-bottom:14px}
 .po-stage .po-lower-grid{height:310px}
+/* V40 : la hauteur des colonnes suit les cartes, y compris les boutons de replay. */
+.po-stage .po-upper-grid,.po-stage .po-lower-grid{height:auto;min-height:0;align-items:start}
+.po-stage .po-col{min-width:0}
+.po-stage .po-match{height:auto;box-sizing:border-box}
+.po-stage .po-lower{clear:both}
 .po-stage .po-lower-grid .po-col:nth-child(3) .po-match{margin-top:55px}
 .po-stage .po-lower-grid .po-col:nth-child(4) .po-match{margin-top:55px}
 .po-stage .po-paths{z-index:1}
