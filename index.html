@@ -95,9 +95,34 @@ function teamPlayers(t){const a=(seasonRosters[t]||[]).slice();if(t==='Black Hor
 function openTeamPage(i){const t=teamNames[i];if(!t)return;selectedTeamId=t;page='Fiche équipe';render();window.scrollTo(0,0);}
 let selectedPlayerName='';
 function openPlayerPage(name){selectedPlayerName=name;page='Fiche joueur';render();window.scrollTo(0,0);}
+// Statistiques Raze Championship issues des classements individuels ODS déjà importés.
+// Les alias ne sont utilisés que pour les correspondances identifiées sur les feuilles.
+const championshipPlayerAliases={
+ 'Black Horizon':{'skyfox_277_':'Skyfox','flash_skipy':'FlasH_SkiPy','amauboox':'amauboox','amauboox78':'amauboox'},
+ 'Dunk Master':{'monst3r':'Monst3r'},
+ 'Origin':{'nimoxt.':'Nimoxt','zax':'ZAX'},
+ 'Trinity':{'hasbiiii':'hasbiiii','santaury_':'Santaury_'},
+ 'Eclipse':{'reynnz.':'Reynnz.'}
+};
+function championshipStatName(team,name){
+ const key=normalizePlayer(name);
+ const alias=championshipPlayerAliases[team]?.[key];
+ if(alias)return alias;
+ const all=Object.values(realStats).flat();
+ const exact=all.find(p=>normalizePlayer(p.name)===key);
+ return exact?exact.name:null;
+}
+function championshipPlayerStat(team,name,metric){
+ const target=championshipStatName(team,name);
+ if(!target)return null;
+ const found=(realStats[metric]||[]).find(p=>normalizePlayer(p.name)===normalizePlayer(target));
+ return found?found.value:null;
+}
 function renderPlayerPage(){const name=selectedPlayerName,t=selectedTeamId;
-const fields=['1v1','2v2','3v3'];
-return `<div class="team-breadcrumb"><button onclick="page='Fiche équipe';render()">← ${esc(displayTeam(t))}</button> / Joueurs / ${esc(name)}</div><div class="player-profile-grid"><section><h1>🎮 ${esc(name)}</h1><p>Équipe : <strong>${esc(displayTeam(t))}</strong></p><h2>MMR Rocket League</h2>${fields.map(x=>`<div class="player-mmr-row"><strong>${x}</strong><span>Non disponible</span></div>`).join('')}<p class="v4-source">MMR actuel, record historique et moyenne : en attente de données vérifiées. Aucun chiffre fictif.</p><h3>Actualisation</h3><p>Connexion à une source de données autorisée nécessaire pour récupérer automatiquement les MMR. Les statistiques ne sont pas encore synchronisées.</p></section><section class="card"><h2>📊 Statistiques du joueur</h2>${['Matchs joués','Tirs','Buts','Passes décisives','Arrêts','MVP'].map(x=>`<div class="player-mmr-row"><span>${x}</span><strong>—</strong></div>`).join('')}<p class="v4-source">Les données de cette fiche ne sont pas celles de l’exemple RBRS. Elles seront affichées uniquement après vérification de leur source.</p></section></div>`;
+ const fields=['1v1','2v2','3v3'];
+ const statRows=[['Matchs joués',null],['Tirs',null],['Buts','buts'],['Passes décisives','passes'],['Arrêts','arrêts'],['Score moyen par manche (MVP)','mvp']];
+ const formatted=(value,key)=>value===null?'—':key==='mvp'?Number(value).toLocaleString('fr-FR',{maximumFractionDigits:2}):Number(value).toLocaleString('fr-FR');
+ return `<div class="team-breadcrumb"><button onclick="page='Fiche équipe';render()">← ${esc(displayTeam(t))}</button> / Joueurs / ${esc(name)}</div><div class="player-profile-grid"><section><h1>🎮 ${esc(name)}</h1><p>Équipe : <strong>${esc(displayTeam(t))}</strong></p><h2>MMR Rocket League</h2>${fields.map(x=>`<div class="player-mmr-row"><strong>${x}</strong><span>Non disponible</span></div>`).join('')}<p class="v4-source">MMR Rocket League : en attente de données vérifiées. Aucun chiffre fictif.</p></section><section class="card"><h2>📊 Statistiques Raze Championship</h2>${statRows.map(([label,key])=>`<div class="player-mmr-row"><span>${label}</span><strong>${formatted(key?championshipPlayerStat(t,name,key):null,key)}</strong></div>`).join('')}<p class="v4-source">Données de la saison 1 issues des classements individuels ODS importés. Les tirets indiquent des données non disponibles, pas zéro. Le score MVP est une moyenne et non un nombre de titres MVP. Ces valeurs correspondent aux feuilles importées et ne se mettent pas encore à jour automatiquement après un nouveau match.</p></section></div>`;
 }
 function saveAvailability(){try{localStorage.setItem(availabilityKey,JSON.stringify(teamAvailabilities));}catch(e){alert('Sauvegarde locale impossible : '+e.message);}}
 function addAvailability(e){e.preventDefault();const f=e.currentTarget,t=selectedTeamId;const day=f.elements.day.value,start=f.elements.start.value,end=f.elements.end.value;
