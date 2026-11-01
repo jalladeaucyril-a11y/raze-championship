@@ -134,7 +134,15 @@ function championshipPlayerStat(team,name,metric){
  return found?found.value:null;
 }
 // Manches individuelles avec score > 0 sur les 7 feuilles hebdomadaires.
-function championshipPlayerGames(team,name){return championshipPlayerStat(team,name,'playerGames');}
+function championshipPlayerGames(team,name){
+ const target=championshipStatName(team,name)||name;
+ const keys=[normalizePlayer(target),normalizePlayer(name)];
+ if(keys.includes('skyfox_277_'))keys.push('skyfox');
+ if(keys.includes('amauboox'))keys.push('amaubox');
+ if(keys.includes('santaury_'))keys.push('santaurry_');
+ const record=keys.map(k=>playerStatsS1toS7[k]).find(p=>p && typeof p.playerGames==='number');
+ return record ? record.playerGames : null;
+}
 function renderPlayerPage(){const name=selectedPlayerName,t=selectedTeamId;
  const fields=['1v1','2v2','3v3'];
  const statRows=[['Manches jouées','playerGames'],['Buts','buts'],['Passes décisives','passes'],['Arrêts','arrêts'],['Score moyen par manche (MVP)','mvp']];
