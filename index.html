@@ -34,10 +34,20 @@ function v4Standings(){let r=Object.fromEntries(teamNames.map(n=>[n,{name:n,j:0,
 function v4Results(){const shown=v4Week!=='Toutes'&&!weekUnlocked(Number(v4Week))?[]:allRealMatches().filter(m=>(v4Week==='Toutes'||String(m.week)===String(v4Week))&&weekUnlocked(m.week));return `<div class="v4-filter">${['Toutes',1,2,3,4,5,6,7].map(w=>`<button class="${String(w)===String(v4Week)?'selected':''}" onclick="selectMatchWeek('${w}')" title="${w!=='Toutes'&&!weekUnlocked(Number(w))?'Termine la semaine précédente pour voir les affiches':''}">${w==='Toutes'?'Toutes les semaines':(weekUnlocked(Number(w))?'':'🔒 ')+'Semaine '+w}</button>`).join('')}</div>${v4Week!=='Toutes'&&!weekUnlocked(Number(v4Week))?lockedWeekMessage(v4Week):`<div class="v4-grid">${shown.map(m=>`<article class="v4-result"><small>Semaine ${m.week} · ${m.sa===null?'À jouer · BO4':'Résultat enregistré'}</small><h3>${esc(displayTeam(m.a))}<br>VS<br>${esc(displayTeam(m.b))}</h3><div class="v4-score">${m.sa===null?'À jouer · BO4':m.sa+' — '+m.sb}</div>${m.source?`<a class="v4-source" href="${m.source}" target="_blank" rel="noopener">Voir la feuille de résultat ↗</a>`:''}</article>`).join('')||'<div class="card">Aucune rencontre enregistrée pour cette semaine.</div>'}</div>`}`}
 function v4Stats(){let data=realStats[v4Stat]||[];return `<div class="v4-filter">${[['buts','Buteurs'],['passes','Passeurs'],['arrêts','Gardiens / arrêts'],['mvp','Moyennes MVP']].map(([id,label])=>`<button class="${id===v4Stat?'selected':''}" onclick="v4Stat='${id}';render()">${label}</button>`).join('')}</div><div class="card v4-scroll"><table class="v4-table"><tr><th>#</th><th>Joueur</th><th>${v4Stat==='mvp'?'Moyenne':'Total'}</th></tr>${data.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td><b>${p.value}</b></td></tr>`).join('')}</table><p class="v4-source">Données issues des fichiers ODS fournis. Les statistiques ne sont pas rattachées à une équipe lorsqu'aucune correspondance fiable n'est disponible.</p></div>`}
 
-const initialSeasonRosters={"Black Horizon": ["Skyfox_277_", "FlasH_SkiPy", "Locbyze"], "Dynasty": ["Ashito Yoichi", "Akaioh", "S7t_"], "Cordon Bleu Penders": ["Gogs", "Gagadinho", "Ad3l"], "Dunk Master": ["C'LMTH", "MONST3R", "jhonbedo1979"], "Origin": ["Nimoxt.", "Zax", "LzAto"], "Eclipse": ["reynnz.", "Asuko97", "Pierico_"], "Pause Café": ["IIII", "Iluminha", "ADTiX"], "Trinity": ["Santaury_", "HASBIIII", "Motara"]};
+const initialSeasonRosters={"Origin":["Nimoxt.","Zax","LzAto"],"Eclipse":["reynnz.","Asuko97","Pierico_"],"Cordon Bleu Penders":["Gogs","Gagadinho","Ad3l","Ad4m"],"Dunk Master":["Never_12","jhonbedo1979","WLX","MONST3R"],"Dynasty":["Gecko","Akaioh","Seven","Yakzyx"],"Black Horizon":["Skyfox_277_","FlasH_SkiPy","Locbyze","Amauboox"],"Pause Café":["Maste","Umister","Omega"],"Trinity":["Santaury_","HASBIIII","Motara","Groseille"]};
 const rosterStorageKey='raze_s1_rosters_v8';
 let seasonRosters;
-try {const saved=JSON.parse(localStorage.getItem(rosterStorageKey));seasonRosters=Object.fromEntries(Object.entries(initialSeasonRosters).map(([t,players])=>[t,Array.isArray(saved?.[t])?saved[t].filter(x=>typeof x==='string'):players.slice()]));}catch(e){seasonRosters=structuredClone(initialSeasonRosters)}
+try {
+ const saved=JSON.parse(localStorage.getItem(rosterStorageKey));
+ const oldDefaults={'Black Horizon':['Skyfox_277_','FlasH_SkiPy','Locbyze'],'Dynasty':['Ashito Yoichi','Akaioh','S7t_'],'Cordon Bleu Penders':['Gogs','Gagadinho','Ad3l'],'Dunk Master':["C'LMTH",'MONST3R','jhonbedo1979'],'Origin':['Nimoxt.','Zax','LzAto'],'Eclipse':['reynnz.','Asuko97','Pierico_'],'Pause Café':['IIII','Iluminha','ADTiX'],'Trinity':['Santaury_','HASBIIII','Motara']};
+ seasonRosters=Object.fromEntries(Object.entries(initialSeasonRosters).map(([t,players])=>{
+   const existing=Array.isArray(saved?.[t])?saved[t].filter(x=>typeof x==='string'):[];
+   const norm=s=>String(s).trim().toLocaleLowerCase();
+   const legacy=new Set((oldDefaults[t]||[]).map(norm));
+   const additions=existing.filter(n=>!legacy.has(norm(n))&&!players.some(p=>norm(p)===norm(n)));
+   return [t,players.concat(additions)];
+ }));
+}catch(e){seasonRosters=structuredClone(initialSeasonRosters)}
 for(const t of createdTeams){if(!Array.isArray(seasonRosters[t])){try{const saved=JSON.parse(localStorage.getItem(rosterStorageKey)||'{}');seasonRosters[t]=Array.isArray(saved[t])?saved[t].filter(x=>typeof x==='string'):[];}catch(e){seasonRosters[t]=[];}}}
 function saveRosters(){localStorage.setItem(rosterStorageKey,JSON.stringify(seasonRosters))}
 function addTeamMember(event){event.preventDefault();if(!admin)return;const f=event.currentTarget;const team=f.elements.team.value;const name=f.elements.member.value.trim();if(!teamNames.includes(team)||!name){alert('Choisis une équipe et saisis un pseudo.');return}if(name.length>60){alert('Pseudo trop long (60 caractères maximum).');return}if((seasonRosters[team]||[]).some(n=>n.toLocaleLowerCase()===name.toLocaleLowerCase())){alert('Ce joueur figure déjà dans cette équipe.');return}seasonRosters[team].push(name);saveRosters();render();alert('Joueur ajouté à '+team+' dans cette démonstration locale.')}
@@ -91,7 +101,7 @@ let teamAvailabilities={};
 try {const a=JSON.parse(localStorage.getItem(availabilityKey)||'{}');if(a&&typeof a==='object'&&!Array.isArray(a))teamAvailabilities=a;}catch(e){}
 const dayNames=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 function normalizePlayer(n){return String(n).trim().toLocaleLowerCase();}
-function teamPlayers(t){const a=(seasonRosters[t]||[]).slice();if(t==='Black Horizon'&&!a.some(x=>['amauboox','amauboox78'].includes(normalizePlayer(x))))a.push('Amauboox');return a;}
+function teamPlayers(t){return (seasonRosters[t]||[]).slice();}
 function openTeamPage(i){const t=teamNames[i];if(!t)return;selectedTeamId=t;page='Fiche équipe';render();window.scrollTo(0,0);}
 let selectedPlayerName='';
 function openPlayerPage(name){selectedPlayerName=name;page='Fiche joueur';render();window.scrollTo(0,0);}
@@ -115,7 +125,9 @@ function championshipStatName(team,name){
 function championshipPlayerStat(team,name,metric){
  const target=championshipStatName(team,name);
  if(!target)return null;
- const found=(realStats[metric]||[]).find(p=>normalizePlayer(p.name)===normalizePlayer(target));
+ const statAliases={'amauboox':['amaubox','amauboox'],'santaury_':['santaurry_','santaury_']};
+ const keys=statAliases[normalizePlayer(target)]||[normalizePlayer(target)];
+ const found=(realStats[metric]||[]).find(p=>keys.includes(normalizePlayer(p.name)));
  return found?found.value:null;
 }
 // Nombre de manches individuelles renseignées (G1 à G4), Mvp.ods, semaines 1 à 5.
@@ -130,7 +142,7 @@ function renderPlayerPage(){const name=selectedPlayerName,t=selectedTeamId;
  const fields=['1v1','2v2','3v3'];
  const statRows=[['Manches jouées','playerGames'],['Buts','buts'],['Passes décisives','passes'],['Arrêts','arrêts'],['Score moyen par manche (MVP)','mvp']];
  const formatted=(value,key)=>value===null?'—':key==='mvp'?Number(value).toLocaleString('fr-FR',{maximumFractionDigits:2}):Number(value).toLocaleString('fr-FR');
- return `<div class="team-breadcrumb"><button onclick="page='Fiche équipe';render()">← ${esc(displayTeam(t))}</button> / Joueurs / ${esc(name)}</div><div class="player-profile-grid"><section><h1>🎮 ${esc(name)}</h1><p>Équipe : <strong>${esc(displayTeam(t))}</strong></p><h2>MMR Rocket League</h2>${fields.map(x=>`<div class="player-mmr-row"><strong>${x}</strong><span>Non disponible</span></div>`).join('')}<p class="v4-source">MMR Rocket League : en attente de données vérifiées. Aucun chiffre fictif.</p></section><section class="card"><h2>📊 Statistiques Raze Championship</h2>${statRows.map(([label,key])=>`<div class="player-mmr-row"><span>${label}</span><strong>${formatted(key==='playerGames'?championshipPlayerGames(t,name):championshipPlayerStat(t,name,key),key)}</strong></div>`).join('')}<p class="v4-source">Données de la saison 1 issues des classements individuels ODS importés. Les manches jouées sont comptées individuellement : chaque score renseigné dans les colonnes G1, G2, G3 ou G4 de la feuille MVP hebdomadaire compte pour une manche. Données vérifiées pour les semaines 1 à 5. Les joueurs sans correspondance vérifiable affichent un tiret. Les tirets indiquent des données non disponibles, pas zéro. Le score MVP est une moyenne et non un nombre de titres MVP. Ces valeurs correspondent aux feuilles importées et ne se mettent pas encore à jour automatiquement après un nouveau match.</p></section></div>`;
+ return `<div class="team-breadcrumb"><button onclick="page='Fiche équipe';render()">← ${esc(displayTeam(t))}</button> / Joueurs / ${esc(name)}</div><div class="player-profile-grid"><section><h1>🎮 ${esc(name)}</h1><p>Équipe : <strong>${esc(displayTeam(t))}</strong></p><h2>MMR Rocket League</h2>${fields.map(x=>`<div class="player-mmr-row"><strong>${x}</strong><span>Non disponible</span></div>`).join('')}<p class="v4-source">MMR Rocket League : en attente de données vérifiées. Aucun chiffre fictif.</p></section><section class="card"><h2>📊 Statistiques Raze Championship</h2>${statRows.map(([label,key])=>`<div class="player-mmr-row"><span>${label}</span><strong>${formatted(key==='playerGames'?championshipPlayerGames(t,name):championshipPlayerStat(t,name,key),key)}</strong></div>`).join('')}<p class="v4-source">Données de la saison 1 issues des classements individuels ODS importés. Les manches jouées sont comptées individuellement : chaque score renseigné dans les colonnes G1, G2, G3 ou G4 de la feuille MVP hebdomadaire compte pour une manche. Effectifs et manches vérifiés sur les feuilles MVP des semaines 1 à 5. Les joueurs sans correspondance vérifiable affichent un tiret. Les tirets indiquent des données non disponibles, pas zéro. Le score MVP est une moyenne et non un nombre de titres MVP. Ces valeurs correspondent aux feuilles importées et ne se mettent pas encore à jour automatiquement après un nouveau match.</p></section></div>`;
 }
 function saveAvailability(){try{localStorage.setItem(availabilityKey,JSON.stringify(teamAvailabilities));}catch(e){alert('Sauvegarde locale impossible : '+e.message);}}
 function addAvailability(e){e.preventDefault();const f=e.currentTarget,t=selectedTeamId;const day=f.elements.day.value,start=f.elements.start.value,end=f.elements.end.value;
