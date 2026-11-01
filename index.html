@@ -188,7 +188,7 @@ function renderReplayReviewAdmin(){
  const pending=replayReviewItems.filter(r=>r.status==='pending_analysis'||r.status==='needs_review');
  const rows=replayReviewItems.map(r=>{const a=r.analysis||{},teams=a.teams||[],score=a.score||{};
   const info=[a.map||a.arena||'',Array.isArray(teams)?teams.map(t=>t.name||t).join(' / '):'',Number.isFinite(score.blue)&&Number.isFinite(score.orange)?score.blue+' - '+score.orange:''].filter(Boolean).join(' · ');
-  const actions=r.status==='needs_review'?`<button class="primary" onclick="replayReviewAction('${esc(r.id)}','validated')">✓ Valider l’analyse</button> <button onclick="replayReviewAction('${esc(r.id)}','rejected')">✕ Refuser</button>`:'';
+  const actions=(r.status==='needs_review'?`<button class="primary" onclick="replayReviewAction('${esc(r.id)}','validated')">✓ Valider l’analyse</button> <button onclick="replayReviewAction('${esc(r.id)}','rejected')">✕ Refuser</button> `:'')+(r.status!=='validated'?`<button type="button" style="border-color:#b94a4a;color:#ff8b8b" onclick="replayReviewDelete('${esc(r.id)}')" ${replayReviewBusy?'disabled':''}>🗑 Supprimer le replay</button>`:'');
   return `<div class="replay-cloud-item"><strong>${esc(r.original_filename)}</strong><br>🏆 ${esc(replayReviewMatchLabel(r.match_key))}<br>👤 Envoyé par : <strong>${esc(replayReviewUploaderLabel(r))}</strong><br>📅 ${esc(r.created_at?new Date(r.created_at).toLocaleString('fr-FR'):'Date inconnue')}<br><span>${esc(r.status==='pending_analysis'?'⏳ En attente d’analyse':r.status==='needs_review'?'🔔 À vérifier':r.status==='validated'?'✅ Validé':r.status==='rejected'?'❌ Refusé':r.status)}</span>${info?'<br>'+esc(info):''}${a.error?'<br>⚠️ '+esc(a.error):''}<div style="margin-top:8px">${actions}</div></div>`;
  }).join('');
  return `<div class="card"><h2>🎮 Analyse des replays · file administrateur</h2><p style="font-size:1.1rem;color:var(--gold);font-weight:700">🔔 ${pending.length} replay(s) à traiter ${pending.length?'— nouveaux fichiers détectés':'— aucun en attente'}</p><p>Les fichiers importés apparaissent ici. L’analyse serveur n’est pas encore activée : aucun résultat, classement ou statistique n’est modifié automatiquement.</p><p>${esc(replayReviewMessage||'')}</p><button type="button" onclick="replayReviewLoad()" ${replayReviewBusy?'disabled':''}>↻ Charger les replays</button><p class="replay-info">${replayReviewLoaded?replayReviewItems.length+' replay(s)':'Clique sur Charger les replays pour afficher la file.'}</p>${rows||'<p>Aucun replay chargé.</p>'}</div>`;
@@ -208,6 +208,34 @@ async function replayReviewAction(id,status){
  const {error}=await replayClient.rpc('championship_review_replay',{p_replay_id:id,p_decision:status});
  if(error){alert('Validation impossible : '+replayError(error));return;}
  await replayReviewLoad();
+}
+// Suppression administrative : uniquement pour les replays non validés.
+// La RPC vérifie les droits côté serveur, conserve un audit et retourne le chemin du fichier.
+async function replayReviewDelete(id){
+ if(!admin||!replayVerifiedAdmin||!replayClient||replayReviewBusy)return;
+ const row=replayReviewItems.find(r=>r.id===id);
+ if(!row||row.status==='validated')return;
+ if(!confirm('Supprimer définitivement le replay « '+row.original_filename+' » ?\nCette action est réservée aux replays non validés et ne modifie pas les résultats.'))return;
+ replayReviewBusy=true;replayReviewMessage='Suppression du replay…';render();
+ try{
+  const {data,error}=await replayClient.rpc('championship_admin_delete_replay',{p_replay_id:id});
+  if(error)throw error;
+  const path=typeof data==='string'?data:null;
+  let warning='';
+  if(path){
+   const removed=await replayClient.storage.from('championship-replays').remove([path]);
+   if(removed.error)warning=' Le replay a été retiré de la liste, mais le fichier stocké n’a pas pu être effacé : '+replayError(removed.error);
+  }
+  for(const key of Object.keys(replayCloudFiles))replayCloudFiles[key]=(replayCloudFiles[key]||[]).filter(f=>f.id!==id);
+  replayReviewMessage=warning?'Suppression partielle.'+warning:'Replay supprimé avec succès.';
+ }catch(e){replayReviewMessage='Suppression impossible : '+replayError(e);}
+ finally{
+  replayReviewBusy=false;
+  const msg=replayReviewMessage;
+  await replayReviewLoad();
+  replayReviewMessage=msg;
+  render();
+ }
 }
 function replayError(e){return e&&e.message?e.message:String(e)}
 function replayCurrentUser(){return replaySession?.user||null}
