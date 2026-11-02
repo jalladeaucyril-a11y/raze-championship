@@ -359,6 +359,15 @@ async function replayInit(){
  const {data}=await replayClient.auth.getSession();replaySession=data?.session||null;
  replayClient.auth.onAuthStateChange((_event,session)=>{replaySession=session;if(session){setTimeout(()=>{replayFetchDiscordDisplayName();replayLoadPermissions();championshipLoadShared();if(replayOpenMatch)replayRefresh(replayOpenMatch)},0)}else{replayDiscordLiveProfile=null;replayDiscordProfileUserId=null;admin=false;replayVerifiedAdmin=false;replayVerifiedTeams=[];replayAccessLoaded=false;if(page==='Administration'||page==='Saison 1')page='Accueil';render()}});
  if(replaySession){await replayLoadPermissions();replayFetchDiscordDisplayName();}else render();await championshipLoadShared();championshipStartPolling();
+ // Depuis le HUB : démarre la connexion Discord seulement si aucune session locale.
+ // Les projets Supabase restent distincts : ce parcours n'est PAS un SSO partagé.
+ const params=new URLSearchParams(location.search);
+ if(params.get('raze_sso')==='1'){
+   params.delete('raze_sso');
+   const next=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;
+   history.replaceState(null,'',next);
+   if(!replaySession) replaySignInDiscord();
+ }
 }
 replayInit();
 
