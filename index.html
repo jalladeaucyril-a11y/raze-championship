@@ -183,15 +183,55 @@ async function saveTeamAccess(i){
 let replayReviewItems=[],replayReviewLoaded=false,replayReviewBusy=false,replayReviewMessage='',replayReviewUploaderTeams={};
 function replayReviewMatchLabel(key){const parts=String(key||'').split('|');try{if(parts[0]==='playoffs')return 'Playoffs · '+decodeURIComponent(parts[2]||'')+' VS '+decodeURIComponent(parts[3]||'');return 'Semaine '+decodeURIComponent(parts[0]||'?')+' · '+decodeURIComponent(parts[1]||'')+' VS '+decodeURIComponent(parts[2]||'')}catch{return String(key||'')}}
 function replayReviewUploaderLabel(r){const found=replayReviewUploaderTeams[r.uploader_id];if(found)return (found.name||'Compte Discord')+' · '+(found.team||'Équipe non attribuée');return 'Équipe non identifiée (charger les comptes Discord)'}
+
+// V55 — Lecture détaillée des résultats réels enregistrés dans championship_replays.analysis.
+function replayReviewStatsMarkup(analysis,status){
+ const a=analysis&&typeof analysis==='object'&&!Array.isArray(analysis)?analysis:{};
+ const entries=Object.entries(a);
+ if(!entries.length)return `<div class="notice" style="margin:12px 0">📊 Aucune donnée d’analyse enregistrée pour ce replay.${status==='pending_analysis'?' Le traitement est en attente.':' Vérifie le traitement côté analyseur avant de valider.'}</div>`;
+ const labelMap={name:'Nom',player:'Joueur',player_name:'Joueur',team:'Équipe',team_name:'Équipe',blue:'Bleu',orange:'Orange',
+  goals:'Buts',assists:'Passes',saves:'Arrêts',shots:'Tirs',score:'Score',points:'Points',demos:'Démolitions',
+  demolitions:'Démolitions',mvp:'MVP',map:'Carte',arena:'Arène',duration:'Durée',winner:'Vainqueur',
+  players:'Joueurs',teams:'Équipes',stats:'Statistiques',statistics:'Statistiques',boost:'Boost',
+  overtime:'Prolongation',error:'Erreur',metadata:'Métadonnées'};
+ const label=k=>labelMap[k]||String(k).replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+ const simple=v=>v===null||typeof v==='string'||typeof v==='number'||typeof v==='boolean';
+ const value=v=>v===null?'Non renseigné':typeof v==='boolean'?(v?'Oui':'Non'):String(v);
+ const line=(k,v)=>`<div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #3b3b3b;padding:6px 0"><span style="color:#c5c7c9">${esc(label(k))}</span><strong style="overflow-wrap:anywhere;text-align:right">${esc(value(v))}</strong></div>`;
+ const panel=(heading,body)=>`<section style="flex:1 1 260px;min-width:0;background:#101317;border:1px solid #4a4438;border-radius:10px;padding:12px"><h4 style="margin:0 0 8px;color:var(--gold)">${esc(heading)}</h4>${body}</section>`;
+ let seen=0;
+ function show(k,v,depth){
+  if(++seen>120)return '';
+  if(simple(v))return panel(label(k),line('Valeur',v));
+  if(Array.isArray(v)){
+   if(!v.length)return '';
+   const rows=v.slice(0,40).map((x,i)=>{
+    if(simple(x))return line(String(i+1),x);
+    if(!x||typeof x!=='object')return '';
+    const title=x.name||x.player_name||x.player||x.team_name||x.team||`${label(k)} ${i+1}`;
+    const fields=Object.entries(x).filter(([,z])=>simple(z)).slice(0,30).map(([n,z])=>line(n,z)).join('');
+    const children=depth<3?Object.entries(x).filter(([,z])=>!simple(z)).slice(0,12).map(([n,z])=>show(n,z,depth+1)).join(''):'';
+    return `<div style="border-top:1px solid #4a4438;margin-top:9px;padding-top:9px"><b style="color:#e5c781">${esc(String(title))}</b>${fields}${children}</div>`;
+   }).join('');
+   return panel(label(k),rows+(v.length>40?'<p>Autres éléments visibles dans les données complètes.</p>':''));
+  }
+  const parts=Object.entries(v);
+  const fields=parts.filter(([,z])=>simple(z)).slice(0,35).map(([n,z])=>line(n,z)).join('');
+  const children=depth<3?parts.filter(([,z])=>!simple(z)).slice(0,20).map(([n,z])=>show(n,z,depth+1)).join(''):'';
+  return (fields?panel(label(k),fields):'')+children;
+ }
+ const cards=entries.map(([k,v])=>show(k,v,0)).join('');
+ return `<div style="margin:14px 0 12px"><h3 style="color:var(--gold);font-size:17px;margin:0 0 10px">📊 Récapitulatif de l’analyse</h3><div style="display:flex;flex-wrap:wrap;gap:10px">${cards||'<p>Aucune statistique détaillée récupérée.</p>'}</div><details style="margin-top:12px"><summary style="cursor:pointer;color:#e4c179">🔎 Voir toutes les données techniques de l’analyse</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;padding:12px;background:#0b0d10;border:1px solid #454545;border-radius:8px">${esc(JSON.stringify(a,null,2))}</pre></details><p style="font-size:12px;color:#c5c7c9">Les champs affichés proviennent uniquement des données enregistrées par l’analyseur. Vérifie-les avant validation.</p></div>`;
+}
 function renderReplayReviewAdmin(){
  if(!admin||!replayVerifiedAdmin)return '';
  const pending=replayReviewItems.filter(r=>r.status==='pending_analysis'||r.status==='needs_review');
  const rows=replayReviewItems.map(r=>{const a=r.analysis||{},teams=a.teams||[],score=a.score||{};
   const info=[a.map||a.arena||'',Array.isArray(teams)?teams.map(t=>t.name||t).join(' / '):'',Number.isFinite(score.blue)&&Number.isFinite(score.orange)?score.blue+' - '+score.orange:''].filter(Boolean).join(' · ');
   const actions=(r.status==='needs_review'?`<button class="primary" onclick="replayReviewAction('${esc(r.id)}','validated')">✓ Valider l’analyse</button> <button onclick="replayReviewAction('${esc(r.id)}','rejected')">✕ Refuser</button> `:'')+(r.status!=='validated'?`<button type="button" style="border-color:#b94a4a;color:#ff8b8b" onclick="replayReviewDelete('${esc(r.id)}')" ${replayReviewBusy?'disabled':''}>🗑 Supprimer le replay</button>`:'');
-  return `<div class="replay-cloud-item"><strong>${esc(r.original_filename)}</strong><br>🏆 ${esc(replayReviewMatchLabel(r.match_key))}<br>👤 Envoyé par : <strong>${esc(replayReviewUploaderLabel(r))}</strong><br>📅 ${esc(r.created_at?new Date(r.created_at).toLocaleString('fr-FR'):'Date inconnue')}<br><span>${esc(r.status==='pending_analysis'?'⏳ En attente d’analyse':r.status==='needs_review'?'🔔 À vérifier':r.status==='validated'?'✅ Validé':r.status==='rejected'?'❌ Refusé':r.status)}</span>${info?'<br>'+esc(info):''}${a.error?'<br>⚠️ '+esc(a.error):''}<div style="margin-top:8px">${actions}</div></div>`;
+  return `<div class="replay-cloud-item"><strong>${esc(r.original_filename)}</strong><br>🏆 ${esc(replayReviewMatchLabel(r.match_key))}<br>👤 Envoyé par : <strong>${esc(replayReviewUploaderLabel(r))}</strong><br>📅 ${esc(r.created_at?new Date(r.created_at).toLocaleString('fr-FR'):'Date inconnue')}<br><span>${esc(r.status==='pending_analysis'?'⏳ En attente d’analyse':r.status==='needs_review'?'🔔 À vérifier':r.status==='validated'?'✅ Validé':r.status==='rejected'?'❌ Refusé':r.status)}</span>${info?'<br>'+esc(info):''}${a.error?'<br>⚠️ '+esc(a.error):''}${replayReviewStatsMarkup(a,r.status)}<div style="margin-top:8px">${actions}</div></div>`;
  }).join('');
- return `<div class="card"><h2>🎮 Analyse des replays · file administrateur</h2><p style="font-size:1.1rem;color:var(--gold);font-weight:700">🔔 ${pending.length} replay(s) à traiter ${pending.length?'— nouveaux fichiers détectés':'— aucun en attente'}</p><p>Les fichiers importés apparaissent ici. L’analyse serveur n’est pas encore activée : aucun résultat, classement ou statistique n’est modifié automatiquement.</p><p>${esc(replayReviewMessage||'')}</p><button type="button" onclick="replayReviewLoad()" ${replayReviewBusy?'disabled':''}>↻ Charger les replays</button><p class="replay-info">${replayReviewLoaded?replayReviewItems.length+' replay(s)':'Clique sur Charger les replays pour afficher la file.'}</p>${rows||'<p>Aucun replay chargé.</p>'}</div>`;
+ return `<div class="card"><h2>🎮 Analyse des replays · file administrateur</h2><p style="font-size:1.1rem;color:var(--gold);font-weight:700">🔔 ${pending.length} replay(s) à traiter ${pending.length?'— nouveaux fichiers détectés':'— aucun en attente'}</p><p>Les fichiers importés apparaissent ici. L’analyseur serveur traite les fichiers importés. Vérifie les données ci-dessous avant toute validation : aucun résultat, classement ou statistique n’est publié automatiquement.</p><p>${esc(replayReviewMessage||'')}</p><button type="button" onclick="replayReviewLoad()" ${replayReviewBusy?'disabled':''}>↻ Charger les replays</button><p class="replay-info">${replayReviewLoaded?replayReviewItems.length+' replay(s)':'Clique sur Charger les replays pour afficher la file.'}</p>${rows||'<p>Aucun replay chargé.</p>'}</div>`;
 }
 async function replayReviewLoad(){
  if(!admin||!replayVerifiedAdmin||!replayClient||replayReviewBusy)return;
